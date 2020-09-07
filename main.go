@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"flag"
+	"io"
 	"log"
 	"net/http"
 )
@@ -43,9 +44,17 @@ func main(){
 func serverHandler() http.HandlerFunc {
     handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         // Check if we use a tcp stream or just http
+        //For example, the CONNECT method can be used to access websites that use SSL (HTTPS).
+        //The client asks an HTTP Proxy server to tunnel the TCP connection 
+        //to the desired destination.
+        //The server then proceeds to make the connection on behalf of the client. 
+        //Once the connection has been established by the server, 
+        //the Proxy server continues to proxy the TCP stream to and from the client.
         if r.Method == http.MethodConnect {
+            PrintRequest(r)
             handleStream(w, r)
         } else {
+            PrintRequest(r)
             handleHttp(w, r)
         }
     })
@@ -53,10 +62,17 @@ func serverHandler() http.HandlerFunc {
     return handler
 }
 
-func handleHttp(w http.ResponseWriter, r *http.Request) {
-
+func transfer(dest io.WriteCloser, src io.ReadCloser) {
+    defer dest.Close()
+    defer src.Close()
+    io.Copy(dest, src)
 }
 
 func handleStream(w http.ResponseWriter, r *http.Request) {
 
 }
+
+func handleHttp(w http.ResponseWriter, r *http.Request) {
+
+}
+
