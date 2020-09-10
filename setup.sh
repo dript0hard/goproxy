@@ -10,7 +10,7 @@ openssl req \
     -keyout server.key \
     -new \
     -out server.pem \
-    -subj /CN=org-ComSign \
+    -subj /CN=localhost \
     -reqexts SAN \
     -extensions SAN \
     -config <(cat $sslConfig \
