@@ -55,12 +55,8 @@ func main(){
 func serverHandler() http.HandlerFunc {
     handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodConnect {
-            reqJson := PrintRequest(r)
-            log.Println(reqJson)
             handleStream(w, r)
         } else {
-            reqJson := PrintRequest(r)
-            log.Println(reqJson)
             handleHttp(w, r)
         }
     })
@@ -76,6 +72,7 @@ func transfer(dest io.WriteCloser, src io.ReadCloser) {
 
 func handleStream(w http.ResponseWriter, r *http.Request) {
     // Try to connect to destination.
+    log.Printf("Got tcp Stream request for %v\n", r.Host)
     destConn, err := net.DialTimeout("tcp", r.Host, 10*time.Second)
     if err != nil {
         // Return HTTP error response.
@@ -117,8 +114,10 @@ func handleHttp(w http.ResponseWriter, r *http.Request) {
     }
 
     defer resp.Body.Close()
-    copyHeader(w.Header(), resp.Header)
     w.WriteHeader(http.StatusOK)
-    io.Copy(w, resp.Body)
+    copyHeader(w.Header(), resp.Header)
+    if resp.ContentLength != 0 {
+        io.Copy(w, resp.Body)
+    }
 }
 
