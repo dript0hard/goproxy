@@ -74,14 +74,6 @@ func transfer(dest io.WriteCloser, src io.ReadCloser) {
     io.Copy(dest, src)
 }
 
-func copyHeader(dest, src http.Header){
-    for k, vv := range src {
-        for _, v := range vv {
-            dest.Add(k, v)
-        }
-    }
-}
-
 func handleStream(w http.ResponseWriter, r *http.Request) {
     // Try to connect to destination.
     destConn, err := net.DialTimeout("tcp", r.Host, 10*time.Second)
@@ -107,6 +99,14 @@ func handleStream(w http.ResponseWriter, r *http.Request) {
 
     go transfer(clientConn, destConn)
     go transfer(destConn, clientConn)
+}
+
+func copyHeader(dest, src http.Header){
+    for k, vv := range src {
+        for _, v := range vv {
+            dest.Add(k, v)
+        }
+    }
 }
 
 func handleHttp(w http.ResponseWriter, r *http.Request) {
